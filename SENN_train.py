@@ -1,5 +1,7 @@
 '''
 Main script for training the net
+
+sining version
 '''
 
 from __future__ import absolute_import
@@ -14,6 +16,8 @@ import numpy as np
 import tensorflow as tf
 import SENN
 import audio_reader
+
+
 
 LR = 0.00001
 
