@@ -25,13 +25,13 @@ def variable_summaries(var):
     with tf.name_scope('summaries'):
         tensor_name = var.op.name
         mean = tf.reduce_mean(var)
-        tf.scalar_summary(tensor_name + 'mean', mean)
+        tf.summary.scalar(tensor_name + 'mean', mean)
         with tf.name_scope('stddev'):
             stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-        tf.scalar_summary(tensor_name + 'stddev', stddev)
-        tf.scalar_summary(tensor_name + 'max', tf.reduce_max(var))
-        tf.scalar_summary(tensor_name + 'min', tf.reduce_min(var))
-        tf.histogram_summary(tensor_name + 'histogram', var)
+        tf.summary.scalar(tensor_name + 'stddev', stddev)
+        tf.summary.scalar(tensor_name + 'max', tf.reduce_max(var))
+        tf.summary.scalar(tensor_name + 'min', tf.reduce_min(var))
+        tf.summary.histogram(tensor_name + 'histogram', var)
 
 
 def conv2d(x, W):

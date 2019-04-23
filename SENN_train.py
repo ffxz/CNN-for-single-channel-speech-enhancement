@@ -54,13 +54,13 @@ tf.app.flags.DEFINE_string(
     'val_speech_dir',
     'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\speech_test\\',
     """Directory where to load noise """)
-tf.app.flags.DEFINE_integer('max_steps', 200,
+tf.app.flags.DEFINE_integer('max_steps', 2000000,
                             """Number of batches to run.""")
 
 NFFT = 256  # number of fft points
 NEFF = 129  # number of effective fft points
 frame_move = 64  # hop size
-batch_size = 8
+batch_size = 128
 N_IN = 8  # number of frames presented to the net
 N_OUT = 1  # output frame number
 validation_samples = 8  # total numbers of the validation set
@@ -68,6 +68,7 @@ batch_of_val = np.int(np.floor(validation_samples / batch_size))
 # after all the batches, dequeue the left to make sure
 # all the samples in the validation set are the same
 val_left_to_dequeue = validation_samples - batch_of_val * batch_size
+#you can set it according your dataset length
 val_loss = np.zeros([1000000])
 
 
@@ -91,7 +92,7 @@ def train():
     SE_Net = SENN.SE_NET(
         batch_size, NEFF, N_IN, N_OUT)
 
-    # raw data frames
+    # raw data frames dequeue batch_size dataset
     train_data_frames = audio_rd.dequeue(batch_size)
 
     val_data_frames = val_audio_rd.dequeue(batch_size)
@@ -190,4 +191,6 @@ def train():
             saver.save(sess, checkpoint_path, global_step=step)
 
 
-train()
+
+if __name__ == '__main__':
+    train()
