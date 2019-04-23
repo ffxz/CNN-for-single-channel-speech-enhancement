@@ -10,6 +10,7 @@ from numpy.lib import stride_tricks
 import librosa
 import SENN
 
+#import gc
 
 def stft(sig, frameSize, overlapFac=0.75, window=np.hanning):
     """ short time fourier transform of audio signal """
@@ -19,7 +20,7 @@ def stft(sig, frameSize, overlapFac=0.75, window=np.hanning):
     # samples = np.append(np.zeros(np.floor(frameSize / 2.0)), sig)
     samples = np.array(sig, dtype='float64')
     # cols for windowing
-    cols = np.ceil((len(samples) - frameSize) / float(hopSize)) + 1
+    cols = np.int(np.ceil((len(samples) - frameSize) / float(hopSize)) + 1)
     # zeros at end (thus samples can be fully covered by frames)
     samples = np.append(samples, np.zeros(frameSize))
     frames = stride_tricks.as_strided(
@@ -34,7 +35,7 @@ FLAGS = tf.app.flags.FLAGS
 # directory to load the model
 tf.app.flags.DEFINE_string(
     'train_dir',
-    '/home/nca/Downloads/speech_enhencement/speech_enhencement/SENN2',
+    'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\SENN2',
     """Directory where to write event logs """
     """and checkpoint.""")
 
@@ -46,16 +47,17 @@ NFFT = 256
 N_OUT = 1
 Overlap = 0.75
 mul_fac = 0.2
-NMOVE = (1 - Overlap) * NFFT
-audio_dir = '/media/nca/data/raw_data/speech_train/TRAIN_DR1_FCJF0_SA1.WAV'
-noise_dir = '/media/nca/data/raw_data/Nonspeech_train/n58.wav'
+NMOVE = int((1 - Overlap) * NFFT)
+audio_dir = 'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\speech_test\\S_02_03.wav'
+noise_dir = 'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\Nonspeech_test\\Car Noise_Idle Noise_60mph.wav'
 # dir to write the clean speech
-out_org_dir = '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/test_o.wav'
+out_org_dir = 'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\test_o.wav'
 # dir to write the clean speech inference
-out_audio_dir = '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/test.wav'
+out_audio_dir = 'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\test.wav'
 
-audio_org, sr = librosa.load(audio_dir, sr=None)
-noise_org, sr = librosa.load(noise_dir, sr=None)
+audio_org, sr = librosa.load(audio_dir, sr=16000)
+noise_org, sr = librosa.load(noise_dir, sr=16000)
+
 
 audio_len = len(audio_org)
 noise_len = len(noise_org)
@@ -81,6 +83,7 @@ else:
 
 in_audio = (audio + mul_fac * noise)
 
+
 in_stft = stft(in_audio, NFFT, Overlap)
 in_stft_amp = np.maximum(np.abs(in_stft), 1e-5)
 in_data = 20. * np.log10(in_stft_amp * 100)
@@ -93,8 +96,8 @@ assert NEFF == in_data.shape[1], 'Uncompatible image height'
 out_len = data_len - N_IN + 1
 out_audio = np.zeros(shape=[(out_len - 1) * NMOVE + NFFT])
 
-
-init_op = tf.initialize_all_variables()
+#add this one lead fault
+#init_op = tf.initialize_all_variables()
 
 # with tf.Graph().as_default():
 
@@ -117,12 +120,15 @@ loss = SE_Net.loss(inf_targets, targets)
 
 saver = tf.train.Saver(tf.all_variables())
 
-summary_op = tf.merge_all_summaries()
+summary_op = tf.summary.merge_all()#merge_all_summaries()
 
 
 with tf.Session() as sess:
-    # restore the model
-    saver.restore(sess, '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/model.ckpt-1760000')
+#sess = tf.Session()
+# restore the model
+    saver.restore(sess,
+                  'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement'
+                  '\\audiosample\SENN2\model.ckpt-199')
     print("Model restored")
     # sess.run(tf.initialize_all_variables())
     i = 0
@@ -153,7 +159,10 @@ with tf.Session() as sess:
         i = i + 1
     # length = img.shape[]
 
-# ipdb.set_trace()
-# store the computed results
-librosa.output.write_wav(out_audio_dir, out_audio, sr)
-librosa.output.write_wav(out_org_dir, in_audio, sr)
+    # ipdb.set_trace()
+    # store the computed results
+    librosa.output.write_wav(out_audio_dir, out_audio, sr)
+    librosa.output.write_wav(out_org_dir, in_audio, sr)
+    print('ed')
+
+#gc.collect()

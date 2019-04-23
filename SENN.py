@@ -107,12 +107,13 @@ class SE_NET(object):
         # shape:
         # batch, N_in, NEFF
         images = data_f
+
+        # 0 position
         targets = tf.concat(
-            0,
             [tf.reshape(
                 speech_f[i][self.N_IN - 1][0:self.NEFF],
                 [1, self.NEFF])
-             for i in range(0, self.batch_size, 1)])
+             for i in range(0, self.batch_size, 1)], 0)
         # do per image whitening (not batch normalization!)
         images_reshape = tf.transpose(tf.reshape(
             images, [self.batch_size, -1]))
@@ -206,7 +207,8 @@ class SE_NET(object):
     def loss(self, inf_targets, targets):
         '''l2 loss for the log spectrum'''
         loss_v = tf.nn.l2_loss(inf_targets - targets) / self.batch_size
-        tf.scalar_summary('loss', loss_v)
+        #tf.scalar_summary('loss', loss_v)
+        tf.summary.scalar('loss', loss_v)
         # loss_merge = tf.cond(
         #     is_val, lambda: tf.scalar_summary('val_loss_batch', loss_v),
         #     lambda: tf.scalar_summary('loss', loss_v))

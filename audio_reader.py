@@ -99,11 +99,11 @@ class Audio_reader(object):
         count = 0
         while not stop:
             # randomly comnbine the speech and noise
-            ids = range(N_tot)
+            ids = list(range(N_tot))
             random.shuffle(ids)
             for i in ids:
                 # ipdb.set_trace()
-                noise_id = i / (N_audio_files)
+                noise_id = i // (N_audio_files)
                 audio_id = i - N_audio_files * noise_id
                 audio_org, _ = librosa.load(self.audiofiles[audio_id], sr=None)
                 noise_org, _ = librosa.load(self.noisefiles[noise_id], sr=None)
@@ -130,9 +130,9 @@ class Audio_reader(object):
                     audio = np.array(audio_org)
 
                 # number of generated frames
-                num_iter = np.floor(
+                num_iter = np.int(np.floor(
                     (tot_len - self.frame_length) / self.frame_move -
-                    self.N_IN)
+                    self.N_IN))
                 # generate for each multiply factor
                 for mul_fac in SNR:
                     noisy_speech = audio + mul_fac * noise

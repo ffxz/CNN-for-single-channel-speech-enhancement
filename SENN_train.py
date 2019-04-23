@@ -26,48 +26,45 @@ FLAGS = tf.app.flags.FLAGS
 # store the check points
 tf.app.flags.DEFINE_string(
     'train_dir',
-    '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2',
+    'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\SENN2',
     """Directory where to write event logs """)
 # write summary about the loss and etc.
 tf.app.flags.DEFINE_string(
     'sum_dir',
-    '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/sum2',
+    'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\SENN2\\sum2',
     """Directory where to write summary """)
 # noise directory
 tf.app.flags.DEFINE_string(
     'noise_dir',
-    '/media/nca/data/raw_data/Nonspeech_train/',
-    # '/home/nca/Downloads/raw_data/Nonspeech_train/',
+    'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\Nonspeech_train\\',
     """Directory where to load noise """)
 # speech directory
 tf.app.flags.DEFINE_string(
     'speech_dir',
-    '/media/nca/data/raw_data/speech_train/',
+    'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\speech_train\\',
     # '/home/nca/Downloads/raw_data/speech_train/',
     """Directory where to load speech """)
 # validation noise directory
 tf.app.flags.DEFINE_string(
     'val_noise_dir',
-    '/media/nca/data/raw_data/Nonspeech_test/',
-    # '/home/nca/Downloads/raw_data/Nonspeech_test/',
+    'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\Nonspeech_test\\',
     """Directory where to load noise """)
 # validation speech directory
 tf.app.flags.DEFINE_string(
     'val_speech_dir',
-    '/media/nca/data/raw_data/speech_test/',
-    # '/home/nca/Downloads/raw_data/speech_test/',
+    'G:\研二上学期\paper\denoise\coding\CNN-for-single-channel-speech-enhancement\\audiosample\\speech_test\\',
     """Directory where to load noise """)
-tf.app.flags.DEFINE_integer('max_steps', 2000000000,
+tf.app.flags.DEFINE_integer('max_steps', 200,
                             """Number of batches to run.""")
 
 NFFT = 256  # number of fft points
 NEFF = 129  # number of effective fft points
 frame_move = 64  # hop size
-batch_size = 128
+batch_size = 8
 N_IN = 8  # number of frames presented to the net
 N_OUT = 1  # output frame number
-validation_samples = 848824  # total numbers of the validation set
-batch_of_val = np.floor(validation_samples / batch_size)
+validation_samples = 8  # total numbers of the validation set
+batch_of_val = np.int(np.floor(validation_samples / batch_size))
 # after all the batches, dequeue the left to make sure
 # all the samples in the validation set are the same
 val_left_to_dequeue = validation_samples - batch_of_val * batch_size
@@ -117,10 +114,11 @@ def train():
 
     saver = tf.train.Saver(tf.all_variables())
 
-    summary_op = tf.merge_all_summaries()
+    #summary_op = tf.merge_all_summaries()
+    summary_op = tf.summary.merge_all()
 
-    init = tf.initialize_all_variables()
-
+    #init = tf.initialize_all_variables()
+    init = tf.global_variables_initializer()
     sess = tf.Session()
 
     sess.run(init)
@@ -130,13 +128,13 @@ def train():
 
     # tf.train.start_queue_runners(sess=sess)
 
-    summary_writer = tf.train.SummaryWriter(
+    summary_writer = tf.summary.FileWriter(#tf.train.SummaryWriter(
         FLAGS.sum_dir,
         sess.graph)
 
     # to track the times of validation
     val_loss_id = 0
-    for step in xrange(FLAGS.max_steps):
+    for step in range(FLAGS.max_steps):
 
         start_time = time.time()
         _, loss_value = sess.run(
@@ -158,7 +156,7 @@ def train():
             format_str = (
                 '%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
                 'sec/batch)')
-            print (format_str % (datetime.now(), step, loss_value,
+            print(format_str % (datetime.now(), step, loss_value,
                                  examples_per_sec, sec_per_batch))
 
         # write summary every 100 step
